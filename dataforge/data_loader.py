@@ -2,7 +2,7 @@ import pandas as pd
 import pathlib
 from typing import Tuple, Optional
 
-def load_csv(file_path: pathlib.Path, target_col: Optional[str] = None) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
+def load_csv(file_path: pathlib.Path, target_column: Optional[str] = None) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
     """
     Loads csv data from a file path and separates features(X) from the target(y) if the target column is provided as argument.
     """
@@ -13,14 +13,14 @@ def load_csv(file_path: pathlib.Path, target_col: Optional[str] = None) -> Tuple
     except Exception as e:
         raise Exception(f"An error occurred during file loading: {e}")
     
-    if target_col is None:
+    if target_column is None:
         return df, None
     
-    if target_col not in df.columns:
-        raise ValueError(f"Target column '{target_col}' not found in the dataset.")
+    if target_column not in df.columns:
+        raise ValueError(f"Target column '{target_column}' not found in the dataset.")
     
-    X = df.drop(columns=[target_col])
-    y = df[target_col]
+    X = df.drop(columns=[target_column])
+    y = df[target_column]
 
     return X, y
 
@@ -35,14 +35,14 @@ if __name__ == '__main__':
         print(f"   -> Full DataFrame shape: {df_full.shape}")
 
         # test 2
-        X_, y_ = load_csv(TEST_DATA_PATH, target_col='Target') 
+        X_, y_ = load_csv(TEST_DATA_PATH, target_column='Target') 
         print(f"\n[Test 2: Success] load_csv split (ML Mode).")
         print(f"   -> Features (X) columns: {X_.columns.tolist()}")
         
         # test 3
         print("\n[Test 3: Checking Validation Error...]")
         try:
-            load_csv(TEST_DATA_PATH, target_col='NON_EXISTENT_COLUMN')
+            load_csv(TEST_DATA_PATH, target_column='NON_EXISTENT_COLUMN')
         except ValueError as ve:
             print(f"   -> Validation Passed: Caught expected error: {ve}")
             
