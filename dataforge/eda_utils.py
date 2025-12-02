@@ -59,9 +59,12 @@ def get_data_quality_report(df: pd.DataFrame) -> Dict[str, Any]:
         'Outlier Counts (Z-score > 3)': outlier_counts
     }
 
-def plot_univariate_distribution(df: pd.DataFrame, col: str) -> Optional[plt.Figure]:
+def plot_univariate_distribution(df: pd.DataFrame, col: str, hue: Optional[str] = None) -> Optional[plt.Figure]:
     if col not in df.columns:
         return None
+
+    if hue and hue not in df.columns:
+        hue = None
     
     fig, ax = plt.subplots(figsize=(8, 5))
     
@@ -76,16 +79,33 @@ def plot_univariate_distribution(df: pd.DataFrame, col: str) -> Optional[plt.Fig
         plot_as_categorical = True
 
     if not plot_as_categorical:
-        sns.histplot(df[col].dropna(), kde=True, ax=ax, color='#1f77b4') 
+        sns.histplot(df[col].dropna(), kde=True, ax=ax, color='#1f77b4')
         ax.set_title(f'Distribution of {col} (Numerical)', fontsize=14)
         ax.set_xlabel(col)
+        
+        if hue:
+            ax.text(0.98, 0.98, f'Note: hue "{hue}" not applied to histogram', 
+                    transform=ax.transAxes, fontsize=8, 
+                    verticalalignment='top', horizontalalignment='right',
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     else:
         top_counts = df[col].value_counts().head(15).index 
         df_plot = df[df[col].isin(top_counts)]
         plot_series = df_plot[col].dropna().astype(str) if is_numerical else df_plot[col].dropna()
-        sns.countplot(y=plot_series, ax=ax, 
-                      order=[str(v) for v in top_counts], color='#ff7f0e') 
-        ax.set_title(f'Value Counts of {col} (Top {len(top_counts)})', fontsize=14)
+        hue_series = df_plot[hue] if hue else None
+        
+        sns.countplot(
+            y=plot_series, 
+            hue=hue_series,
+            ax=ax, 
+            order=[str(v) for v in top_counts]
+        )
+        
+        title = f'Value Counts of {col}'
+        if hue:
+            title += f' by {hue}'
+        title += f' (Top {len(top_counts)})'
+        ax.set_title(title, fontsize=14)
         ax.set_ylabel(col)
         
     plt.tight_layout()
